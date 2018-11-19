@@ -13,10 +13,8 @@ class App extends Component {
   }
 
   handleClick = () => {
-    console.log("Teste na pesquisa " + this.state.searchMovie)
-    axios.get('http://www.omdbapi.com/?apikey=8ccc7bb7&t='.concat(this.state.searchMovie))
+    axios.get('http://www.omdbapi.com/?apikey=8ccc7bb7&type=movie&s='.concat(this.state.searchMovie))
       .then(response => {
-        console.log("Teste na resposta" + response + JSON.stringify(response))
         if (response.data.Response === 'False') {
           this.setState((state) => {
             return {
@@ -27,13 +25,7 @@ class App extends Component {
           });
         }
         else {
-          let movies;
-          if(Array.isArray(response.data)) {
-            movies = response.data;
-          }
-          else {
-            movies = [response.data]
-          }
+        
           // let movies = []
           // for(let movie_data in response.data) {
           //   movies.push(resposne.data[1])
@@ -42,7 +34,7 @@ class App extends Component {
             return {
               ...state,
               foundMovies: true,
-              moviesFound: movies,
+              moviesFound: response.data.Search,
             }
           });
         }
