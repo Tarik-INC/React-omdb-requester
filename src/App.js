@@ -1,28 +1,108 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
 
+import React, { Component } from 'react';
+import axios from 'axios';
+import DisplayMovie from './Components/DisplayMovie';
+import './App.css';
 class App extends Component {
+
+  state = {
+    error: null,
+    foundMovies: true,
+    searchMovie: '',
+    moviesFound: [],
+  }
+
+  handleClick = () => {
+    console.log("Teste na pesquisa " + this.state.searchMovie)
+    axios.get('http://www.omdbapi.com/?apikey=8ccc7bb7&t='.concat(this.state.searchMovie))
+      .then(response => {
+        console.log("Teste na resposta" + response + JSON.stringify(response))
+        if (response.data.Response === 'False') {
+          this.setState((state) => {
+            return {
+              ...state,
+              foundMovies: false,
+              moviesFound: [],
+            }
+          });
+        }
+        else {
+          let movies;
+          if(Array.isArray(response.data)) {
+            movies = response.data;
+          }
+          else {
+            movies = [response.data]
+          }
+          // let movies = []
+          // for(let movie_data in response.data) {
+          //   movies.push(resposne.data[1])
+          // }
+          this.setState((state) => {
+            return {
+              ...state,
+              foundMovies: true,
+              moviesFound: movies,
+            }
+          });
+        }
+      })
+
+      .catch(err => {
+        this.setState({
+          error: err
+        })
+      })
+  }
+
+  handleInput = (event) => {
+    // console.log(event.target.value);
+    const movieName = event.target.value;
+    this.setState(() => {
+      return {
+        ...this.state,
+        searchMovie: movieName
+      }
+    })
+  }
+
   render() {
+
+    let searchResult;
+
+    if (this.state.error) {
+      searchResult = (
+        <div>
+          Oops : {this.state.error.message}
+        </div>
+      );
+    }
+    else if (this.state.foundMovies) {
+      searchResult = <DisplayMovie movies={this.state.moviesFound} movieName={this.state.movieName} movieYear={this.state.movieYear} />;
+    }
+    else {
+      searchResult = (
+        <div className='movie_not_found'>
+          I Didn't found any movie
+        <img src={require('./Images/please_god_no.gif')} alt='please god no' className='gif'></img>
+        </div>
+      );
+    }
+
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+      <div>
+        <div className='container'>
+          <label style={{fontWeight: 'bold', fontSize: '16px'}}>
+            Search by movie name:
+          <input style={{marginLeft: '10px', borderRadius: '5px', border: '2px solid grey, fontSize: 24px, fontFamily: monospace, height: 48px' }} placeholder='type here!' type='text' value={this.state.searchMovie} onChange={this.handleInput} />
+          </label>
+          <button className='button' onClick={this.handleClick}>Search!</button>
+        </div>
+        <div>
+          {searchResult}
+        </div>
       </div>
-    );
+    )
   }
 }
-
-export default App;
+export default App
